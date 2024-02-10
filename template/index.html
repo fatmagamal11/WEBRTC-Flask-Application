@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>PeerChat</title>
+    <link rel="shortcut icon" href="../static/icons/logo.svg" />
+    <link rel="apple-touch-icon" href="../static/icons/logo.svg" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- <link rel="stylesheet" href="fontawesome.min.css"> -->
+    <!-- type='text/css' media='screen' -->
+    <link rel="stylesheet" href="../static/css/main.css" />
+    <!-- <link rel="stylesheet" href="all.min.css" /> -->
+  </head>
+  <body>
+    <div id="videos" style="position: relative; display: flex;">
+      <video
+        class="video-player"
+        id="user-1"
+        autoplay
+        playsinline
+        poster="{{ url_for('static', filename='../static/icons/IMG-20230706-WA0010.jpg') }} "
+      ></video>
+      <div id="centering" style="display: none ">
+        <div id="unable"><img src="{{ url_for('static', filename='../static/icons/IMG-20230706-WA0010.jpg') }} alt="" /></div>
+      </div>
+      <video class="video-player" id="user-2" autoplay playsinline style></video>
+    </div>
+    <div class="setting" id="setting">
+      
+      <div>
+        <h4 id="caption" onclick="recognizeSpeech()">caption</h4>
+      </div>
+      <div>
+        <h4 id="translation">translation</h4>
+      </div>
+      <div>
+        <h4 id="none" onclick="hide()">close all ☺</h4>
+      </div>
+    </div>
+    <div id="controls">
+      <div id="result-div"  >
+        <p id="result" ></p>
+  
+      </div>
+      <div class="control-container" id="camera-btn">
+        <img
+          src="{{ url_for('static', filename='../static/icons/camera.png') }}"
+        />
+      </div>
+
+      <div class="control-container"
+        id="mic-btn"
+      >
+        <img
+          src="{{ url_for('static', filename='../static/icons/mic.png') }}"
+        />
+      </div>
+      <div class="control-container" id="setting-btn">
+        <img
+          src="{{ url_for('static', filename='../static/icons/R (1).png') }}"
+        />
+      </div>
+
+      <a
+      href="/">
+        <div class="control-container" id="leave-btn">
+          <img
+            src="{{ url_for('static', filename='../static/icons/phone.png') }}"
+          />
+        </div>
+      </a>
+    </div>
+  </body>
+
+  <script src="{{ url_for('static', filename='../static/js/AgoraRTC_N-4.11.0.js') }}"></script>
+  <script src="{{ url_for('static', filename='../static/js/agora-rtm-sdk-1.4.4.js') }}"></script>
+  <script src="{{ url_for('static', filename='../static/js/main.js') }}"></script>
+
+  <script>
+    function recognizeSpeech() {
+      document.getElementById("setting").style.display="none";
+      document.getElementById("result-div").style.display="block"
+      console.log("caption click")
+      console.log("enable = "+enable)
+      if (enable) {
+        fetch('/recognize_speech', { method: 'POST' })
+          .then(response => {
+            // Log the full response
+            console.log('Full Response:', response);
+    
+            if (!response.ok) {
+                // Log the status code
+                console.log('Status Code:', response.status);
+    
+                // Get the response body as plain text
+                return response.text();
+            }
+            // Check the content type of the response
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                // Parse the response as JSON
+                return response.json();
+            } else {
+                // Treat the response as plain text
+                return response.text();
+            }
+        })
+          .catch(error => {
+              console.error('Error:', error);
+              console.log("Error ocured ")
+              document.getElementById('result').innerText = 'An error occurred.';
+          });
+  }
+
+
+}
+  </script>
+  <!-- <script>
+    const constraints = {
+      audio: true
+    };
+  
+    function handleSuccess(stream) {
+      document.querySelector('audio').srcObject = stream;
+    }
+  
+    function handleError(error) {
+      console.log('getUserMedia error: ', error);
+    }
+  
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(handleSuccess)
+        .catch(handleError);
+  </script> -->
+  <!-- <script>
+    var gui = require('nw.gui');
+    var screenInitialized = false;
+    function obtainDesktopStream (callback, errorCallback) {
+        if (!screenInitialized) {
+            gui.Screen.Init();
+            screenInitialized = true;
+        }
+        gui.Screen.chooseDesktopMedia(
+            ["window","screen"],
+            function(streamId) {
+                var vid_constraint = {
+                    mandatory: {
+                        chromeMediaSource: 'desktop',
+                        chromeMediaSourceId: streamId,
+                        maxWidth: 1920,
+                        maxHeight: 1080
+                    },
+                    optional: []
+                };
+                navigator.webkitGetUserMedia({
+                    audio: false, video: vid_constraint
+                }, callback, function (error) {
+                    errorCallback &&
+                        errorCallback(error, vid_constraint);
+                });
+            }
+        );
+    }
+
+    // use Esc to leave fullscreen mode
+    nw.App.registerGlobalHotKey(new nw.Shortcut({
+        key: "Escape",
+        active: function () {
+            var win = nw.Window.get();
+            if (win.isFullscreen) {
+                win.leaveFullscreen();
+            }
+        }
+    }));
+
+    // create iframe with jitsi-meet
+    var iframe = document.createElement('iframe');
+    iframe.src = nw.App.manifest['jitsi-url'];
+    iframe.allowFullscreen = true;
+    iframe.onload = function () {
+        iframe.contentWindow.JitsiMeetNW = {
+            obtainDesktopStream: obtainDesktopStream
+        };
+    };
+
+    document.body.appendChild(iframe);
+</script> -->
+</html>
